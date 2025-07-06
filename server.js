@@ -1,36 +1,28 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const admin = require('firebase-admin');
-const taskRoutes = require('./routes/taskRoutes');
-
+const express = require("express");
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+const cors = require("cors");
 
 dotenv.config();
 
 const app = express();
-
-
-const serviceAccount = require('./serviceAccountKey.json'); 
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
-
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/tasks', taskRoutes);
-
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+// ✅ MongoDB Connection
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection failed:", err));
+  .catch((err) => console.error("MongoDB connection error:", err));
 
+// ✅ Routes
+app.use("/tasks", require("./routes/taskRoutes"));
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// ✅ Root Route
+app.get("/", (req, res) => {
+  res.send("✅ DoneZo Backend API is Running!");
 });
+
+// ✅ Port Handling for Render / Railway / Local
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
